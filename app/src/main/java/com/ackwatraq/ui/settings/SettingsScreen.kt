@@ -18,6 +18,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.draw.alpha
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.verticalScroll
 import com.ackwatraq.ui.settings.SettingsViewModel
 import com.ackwatraq.domain.model.AppTheme
 
@@ -29,8 +30,9 @@ fun SettingsScreen(navController: NavController, viewModel: SettingsViewModel) {
     Scaffold(
         topBar = { TopAppBar(title = { Text("Settings") }) }
     ) { padding ->
+        val scrollState = androidx.compose.foundation.rememberScrollState()
         Column(
-            modifier = Modifier.fillMaxSize().padding(padding).padding(horizontal = 16.dp),
+            modifier = Modifier.fillMaxSize().padding(padding).padding(horizontal = 16.dp).verticalScroll(scrollState),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Spacer(modifier = Modifier.height(8.dp))
