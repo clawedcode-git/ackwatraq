@@ -33,6 +33,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.height
 
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.graphics.graphicsLayer
@@ -95,15 +96,28 @@ class MainActivity : ComponentActivity() {
                     Scaffold(
                         bottomBar = {
                             if (currentRoute != "splash") {
-                                androidx.compose.foundation.layout.Box(
+                                Surface(
                                     modifier = Modifier
-                                        .padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
+                                        .padding(start = 20.dp, end = 20.dp, bottom = 20.dp)
                                         .fillMaxWidth()
+                                        .height(68.dp), // more compact
+                                    shape = RoundedCornerShape(34.dp),
+                                    color = MaterialTheme.colorScheme.surfaceVariant,
+                                    shadowElevation = 16.dp,
+                                    border = androidx.compose.foundation.BorderStroke(
+                                        width = 1.5.dp,
+                                        brush = androidx.compose.ui.graphics.Brush.verticalGradient(
+                                            colors = listOf(
+                                                androidx.compose.ui.graphics.Color.White.copy(alpha = 0.4f),
+                                                androidx.compose.ui.graphics.Color.Black.copy(alpha = 0.3f)
+                                            )
+                                        )
+                                    )
                                 ) {
                                     NavigationBar(
-                                        modifier = Modifier.clip(androidx.compose.foundation.shape.RoundedCornerShape(32.dp)),
-                                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.95f),
-                                        tonalElevation = 8.dp
+                                        modifier = Modifier.fillMaxSize(),
+                                        containerColor = androidx.compose.ui.graphics.Color.Transparent,
+                                        tonalElevation = 0.dp
                                     ) {
                                         NavigationBarItem(
                                             selected = currentRoute == "home",
@@ -114,7 +128,7 @@ class MainActivity : ComponentActivity() {
                                                 } 
                                             },
                                             icon = { FancyGradientIcon(Icons.Rounded.Home, currentRoute == "home") },
-                                            label = { Text("Home") }
+                                            label = { Text("Home", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Medium)) }
                                         )
                                         NavigationBarItem(
                                             selected = currentRoute == "history",
@@ -125,7 +139,7 @@ class MainActivity : ComponentActivity() {
                                                 } 
                                             },
                                             icon = { FancyGradientIcon(Icons.Rounded.Timeline, currentRoute == "history") },
-                                            label = { Text("History") }
+                                            label = { Text("History", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Medium)) }
                                         )
                                         NavigationBarItem(
                                             selected = currentRoute == "achievements",
@@ -136,7 +150,7 @@ class MainActivity : ComponentActivity() {
                                                 } 
                                             },
                                             icon = { FancyGradientIcon(Icons.Rounded.EmojiEvents, currentRoute == "achievements") },
-                                            label = { Text("Trophies") }
+                                            label = { Text("Trophies", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Medium)) }
                                         )
                                         NavigationBarItem(
                                             selected = currentRoute == "settings",
@@ -147,7 +161,7 @@ class MainActivity : ComponentActivity() {
                                                 } 
                                             },
                                             icon = { FancyGradientIcon(Icons.Rounded.Settings, currentRoute == "settings") },
-                                            label = { Text("Settings") }
+                                            label = { Text("Settings", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Medium)) }
                                         )
                                     }
                                 }
