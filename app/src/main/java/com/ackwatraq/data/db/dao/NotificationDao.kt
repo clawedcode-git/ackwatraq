@@ -19,4 +19,10 @@ interface NotificationDao {
 
     @Query("DELETE FROM notifications")
     suspend fun clearAll()
+
+    @Query("SELECT * FROM notifications ORDER BY timestamp DESC")
+    suspend fun getAll(): List<NotificationRecord>
+
+    @Insert(onConflict = androidx.room.OnConflictStrategy.REPLACE)
+    suspend fun insertAll(notifications: List<NotificationRecord>)
 }

@@ -239,6 +239,48 @@ fun SettingsScreen(navController: NavController, viewModel: SettingsViewModel) {
                     }
                 }
             }
+
+
+            // Data & Backup Card
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text("💾 Data & Backup", style = MaterialTheme.typography.titleMedium, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
+                    Spacer(modifier = Modifier.height(12.dp))
+                    
+                    val context = androidx.compose.ui.platform.LocalContext.current
+                    val exportLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
+                        androidx.activity.result.contract.ActivityResultContracts.CreateDocument("application/json")
+                    ) { uri ->
+                        if (uri != null) {
+                            viewModel.exportData(context, uri)
+                        }
+                    }
+                    
+                    val importLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
+                        androidx.activity.result.contract.ActivityResultContracts.OpenDocument()
+                    ) { uri ->
+                        if (uri != null) {
+                            viewModel.importData(context, uri)
+                        }
+                    }
+
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Button(
+                            onClick = { exportLauncher.launch("ackwatraq_backup.json") },
+                            modifier = Modifier.weight(1f)
+                        ) { Text("Export") }
+                        
+                        Button(
+                            onClick = { importLauncher.launch(arrayOf("application/json")) },
+                            modifier = Modifier.weight(1f)
+                        ) { Text("Import") }
+                    }
+                }
+            }
         }
     }
 }

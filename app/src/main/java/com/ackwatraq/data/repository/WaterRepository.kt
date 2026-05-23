@@ -256,4 +256,23 @@ class WaterRepository(
             preferences[NICKNAME_KEY] = prefs.nickname
         }
     }
+
+    suspend fun getAllIntakeRecords(): List<IntakeRecord> = intakeDao.getAllRecords()
+    suspend fun getAllAchievements(): List<Achievement> = achievementDao.getAll()
+    suspend fun getAllNotifications(): List<com.ackwatraq.domain.model.NotificationRecord> = notificationDao.getAll()
+
+    suspend fun restoreData(exportData: com.ackwatraq.domain.model.ExportData) {
+        // Clear all
+        intakeDao.clearAll()
+        achievementDao.clearAll()
+        notificationDao.clearAll()
+
+        // Insert all
+        intakeDao.insertAll(exportData.intakeRecords)
+        achievementDao.insertAll(exportData.achievements)
+        notificationDao.insertAll(exportData.notifications)
+
+        // Save preferences
+        saveUserPreferences(exportData.preferences)
+    }
 }

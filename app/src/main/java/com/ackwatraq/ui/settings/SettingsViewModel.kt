@@ -53,4 +53,39 @@ class SettingsViewModel(private val repository: WaterRepository) : ViewModel() {
             repository.saveUserPreferences(currentPrefs.copy(nickname = nickname))
         }
     }
+
+    fun exportData(context: android.content.Context, uri: android.net.Uri) {
+        viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+            try {
+                val prefs = repository.getUserPreferences()
+                val intakes = repository.getAllIntakeRecords()
+                val achievements = repository.getAllAchievements()
+                val notifications = repository.getAllNotifications()
+
+                val exportData = com.ackwatraq.domain.model.ExportData(prefs, intakes, achievements, notifications)
+                val jsonString = com.google.gson.Gson().toJson(exportData)
+
+                context.contentResolver.openOutputStream(uri)?.use { outputStream ->
+                    outputStream.write(jsonString.toByteArray())
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    fun importData(context: android.content.Context, uri: android.net.Uri) {
+        viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+            try {
+                context.contentResolver.openInputStream(uri)?.use { inputStream ->
+                    val jsonString = inputStream.bufferedReader().use { it.readText() }
+                    val exportData = com.google.gson.Gson().fromJson(jsonString, com.ackwatraq.domain.model.ExportData::class.java)
+
+                    repository.restoreData(exportData)
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
 }

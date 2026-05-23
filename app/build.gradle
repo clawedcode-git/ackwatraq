@@ -75,6 +75,9 @@ dependencies {
     implementation "androidx.room:room-ktx:2.5.2"
     kapt "androidx.room:room-compiler:2.5.2"
 
+    // Gson
+    implementation 'com.google.code.gson:gson:2.10.1'
+
     // DataStore
     implementation "androidx.datastore:datastore-preferences:1.0.0"
     implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0'
