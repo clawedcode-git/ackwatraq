@@ -33,80 +33,106 @@ fun SettingsScreen(navController: NavController, viewModel: SettingsViewModel) {
         val scrollState = androidx.compose.foundation.rememberScrollState()
         Column(
             modifier = Modifier.fillMaxSize().padding(padding).padding(horizontal = 16.dp).verticalScroll(scrollState),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(4.dp))
             
-            // Appearance Card
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-                shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp)
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text("🎨 Appearance", style = MaterialTheme.typography.titleMedium, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
-                    Spacer(modifier = Modifier.height(12.dp))
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Button(
-                            onClick = { viewModel.setTheme(AppTheme.SYSTEM) },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = if (prefs.theme == AppTheme.SYSTEM) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
-                                contentColor = if (prefs.theme == AppTheme.SYSTEM) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
-                            ),
-                            modifier = Modifier.weight(1f)
-                        ) { Text("System") }
-        
-                        Button(
-                            onClick = { viewModel.setTheme(AppTheme.LIGHT) },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = if (prefs.theme == AppTheme.LIGHT) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
-                                contentColor = if (prefs.theme == AppTheme.LIGHT) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
-                            ),
-                            modifier = Modifier.weight(1f)
-                        ) { Text("Light") }
-        
-                        Button(
-                            onClick = { viewModel.setTheme(AppTheme.DARK) },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = if (prefs.theme == AppTheme.DARK) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
-                                contentColor = if (prefs.theme == AppTheme.DARK) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
-                            ),
-                            modifier = Modifier.weight(1f)
-                        ) { Text("Dark") }
-                    }
-                }
-            }
-
-            // Nickname Settings Card
+            // User Preferences Card
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
                 shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp)
             ) {
                 var showNicknameDialog by remember { mutableStateOf(false) }
-                Column(modifier = Modifier.padding(16.dp)) {
+                var showGoalDialog by remember { mutableStateOf(false) }
+
+                Column(modifier = Modifier.padding(12.dp)) {
+                    Text("⚙️ User Preferences", style = MaterialTheme.typography.titleMedium, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    // Nickname
                     Row(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
                     ) {
-                        Text("🧑‍🤝‍🧑 Nickname", style = MaterialTheme.typography.titleMedium, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
+                        Column {
+                            Text("🧑‍🤝‍🧑 Nickname", style = MaterialTheme.typography.titleSmall, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
+                            if (prefs.nickname.isNotEmpty()) {
+                                Text(prefs.nickname, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary)
+                            }
+                        }
                         Row {
                             IconButton(onClick = {
                                 val randomNames = listOf("Hydro Hero", "Aqua Ace", "Water Warrior", "Splash Star")
                                 viewModel.setNickname(randomNames.random())
-                            }) {
-                                Icon(Icons.Default.Casino, contentDescription = "Random Nickname")
+                            }, modifier = Modifier.size(36.dp)) {
+                                Icon(Icons.Default.Casino, contentDescription = "Random Nickname", modifier = Modifier.size(20.dp))
                             }
-                            IconButton(onClick = { showNicknameDialog = true }) {
-                                Icon(Icons.Default.Edit, contentDescription = "Edit Nickname")
+                            IconButton(onClick = { showNicknameDialog = true }, modifier = Modifier.size(36.dp)) {
+                                Icon(Icons.Default.Edit, contentDescription = "Edit Nickname", modifier = Modifier.size(20.dp))
                             }
                         }
                     }
-                    if (prefs.nickname.isNotEmpty()) {
-                        Text(prefs.nickname, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(top = 8.dp))
+
+                    Divider(modifier = Modifier.padding(vertical = 4.dp).alpha(0.5f))
+
+                    // Daily Goal
+                    Row(
+                        modifier = Modifier.fillMaxWidth().clickable { showGoalDialog = true }.padding(vertical = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("🎯 Daily Goal", style = MaterialTheme.typography.titleSmall, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
+                        Text("${prefs.dailyGoalMl} mL", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary)
+                    }
+
+                    Divider(modifier = Modifier.padding(vertical = 4.dp).alpha(0.5f))
+
+                    // Reminders
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("⏰ Reminders", style = MaterialTheme.typography.titleSmall, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
+                        val launcher = androidx.activity.compose.rememberLauncherForActivityResult(
+                            androidx.activity.result.contract.ActivityResultContracts.RequestPermission()
+                        ) { isGranted: Boolean ->
+                            viewModel.setRemindersEnabled(isGranted)
+                        }
+                        
+                        androidx.compose.material3.Switch(
+                            checked = prefs.remindersEnabled,
+                            onCheckedChange = { enabled -> 
+                                if (enabled && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+                                    launcher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+                                } else {
+                                    viewModel.setRemindersEnabled(enabled) 
+                                }
+                            },
+                            modifier = Modifier.height(24.dp)
+                        )
+                    }
+
+                    Divider(modifier = Modifier.padding(vertical = 4.dp).alpha(0.5f))
+        
+                    // Metric Units
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("⚖️ Metric Units (mL)", style = MaterialTheme.typography.titleSmall, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
+                        androidx.compose.material3.Switch(
+                            checked = prefs.useMetric,
+                            onCheckedChange = { viewModel.setUseMetric(it) },
+                            modifier = Modifier.height(24.dp)
+                        )
                     }
                 }
+
+                // Dialogs
                 if (showNicknameDialog) {
                     var nicknameInput by remember { mutableStateOf(prefs.nickname) }
                     AlertDialog(
@@ -131,146 +157,94 @@ fun SettingsScreen(navController: NavController, viewModel: SettingsViewModel) {
                         }
                     )
                 }
-            }
 
-            // Hydration Settings Card
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-                shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp)
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    var showGoalDialog by remember { mutableStateOf(false) }
-        
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { showGoalDialog = true }
-                            .padding(vertical = 8.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text("🎯 Daily Goal", style = MaterialTheme.typography.titleMedium, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
-                        Text("${prefs.dailyGoalMl} mL", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.primary)
-                    }
-        
-                    if (showGoalDialog) {
-                        var goalAmount by remember { mutableStateOf(prefs.dailyGoalMl.toString()) }
-                        AlertDialog(
-                            onDismissRequest = { showGoalDialog = false },
-                            title = { Text("Set Daily Goal") },
-                            text = {
-                                OutlinedTextField(
-                                    value = goalAmount,
-                                    onValueChange = { newValue ->
-                                        if (newValue.all { it.isDigit() }) {
-                                            goalAmount = newValue
-                                        }
-                                    },
-                                    label = { Text("Goal in mL") },
-                                    keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
-                                        keyboardType = androidx.compose.ui.text.input.KeyboardType.Number
-                                    ),
-                                    singleLine = true
-                                )
-                            },
-                            confirmButton = {
-                                TextButton(
-                                    onClick = {
-                                        val amount = goalAmount.toIntOrNull()
-                                        if (amount != null && amount > 0) {
-                                            viewModel.setDailyGoal(amount)
-                                            showGoalDialog = false
-                                        }
-                                    },
-                                    enabled = goalAmount.isNotEmpty() && (goalAmount.toIntOrNull() ?: 0) > 0
-                                ) {
-                                    Text("Save")
-                                }
-                            },
-                            dismissButton = {
-                                TextButton(onClick = { showGoalDialog = false }) {
-                                    Text("Cancel")
-                                }
-                            }
-                        )
-                    }
-                    
-                    Divider(modifier = Modifier.padding(vertical = 8.dp).alpha(0.5f))
-        
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 8.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text("⏰ Reminders", style = MaterialTheme.typography.titleMedium, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
-                        val launcher = androidx.activity.compose.rememberLauncherForActivityResult(
-                            androidx.activity.result.contract.ActivityResultContracts.RequestPermission()
-                        ) { isGranted: Boolean ->
-                            viewModel.setRemindersEnabled(isGranted)
-                        }
-                        
-                        androidx.compose.material3.Switch(
-                            checked = prefs.remindersEnabled,
-                            onCheckedChange = { enabled -> 
-                                if (enabled && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
-                                    launcher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
-                                } else {
-                                    viewModel.setRemindersEnabled(enabled) 
-                                }
-                            }
-                        )
-                    }
-
-                    Divider(modifier = Modifier.padding(vertical = 8.dp).alpha(0.5f))
-        
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 8.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text("⚖️ Metric Units (mL)", style = MaterialTheme.typography.titleMedium, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
-                        androidx.compose.material3.Switch(
-                            checked = prefs.useMetric,
-                            onCheckedChange = { viewModel.setUseMetric(it) }
-                        )
-                    }
+                if (showGoalDialog) {
+                    var goalAmount by remember { mutableStateOf(prefs.dailyGoalMl.toString()) }
+                    AlertDialog(
+                        onDismissRequest = { showGoalDialog = false },
+                        title = { Text("Set Daily Goal") },
+                        text = {
+                            OutlinedTextField(
+                                value = goalAmount,
+                                onValueChange = { newValue -> if (newValue.all { it.isDigit() }) goalAmount = newValue },
+                                label = { Text("Goal in mL") },
+                                keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number),
+                                singleLine = true
+                            )
+                        },
+                        confirmButton = {
+                            TextButton(
+                                onClick = {
+                                    val amount = goalAmount.toIntOrNull()
+                                    if (amount != null && amount > 0) {
+                                        viewModel.setDailyGoal(amount)
+                                        showGoalDialog = false
+                                    }
+                                },
+                                enabled = goalAmount.isNotEmpty() && (goalAmount.toIntOrNull() ?: 0) > 0
+                            ) { Text("Save") }
+                        },
+                        dismissButton = { TextButton(onClick = { showGoalDialog = false }) { Text("Cancel") } }
+                    )
                 }
             }
 
-
-            // Data & Backup Card
+            // App Settings Card
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
                 shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp)
             ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text("💾 Data & Backup", style = MaterialTheme.typography.titleMedium, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
+                Column(modifier = Modifier.padding(12.dp)) {
+                    Text("📱 App Settings", style = MaterialTheme.typography.titleMedium, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
                     Spacer(modifier = Modifier.height(12.dp))
                     
+                    Text("Theme", style = MaterialTheme.typography.titleSmall, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(vertical = 4.dp)) {
+                        Button(
+                            onClick = { viewModel.setTheme(AppTheme.SYSTEM) },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = if (prefs.theme == AppTheme.SYSTEM) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
+                                contentColor = if (prefs.theme == AppTheme.SYSTEM) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
+                            ),
+                            modifier = Modifier.weight(1f),
+                            contentPadding = PaddingValues(0.dp)
+                        ) { Text("System", style = MaterialTheme.typography.bodySmall) }
+        
+                        Button(
+                            onClick = { viewModel.setTheme(AppTheme.LIGHT) },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = if (prefs.theme == AppTheme.LIGHT) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
+                                contentColor = if (prefs.theme == AppTheme.LIGHT) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
+                            ),
+                            modifier = Modifier.weight(1f),
+                            contentPadding = PaddingValues(0.dp)
+                        ) { Text("Light", style = MaterialTheme.typography.bodySmall) }
+        
+                        Button(
+                            onClick = { viewModel.setTheme(AppTheme.DARK) },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = if (prefs.theme == AppTheme.DARK) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
+                                contentColor = if (prefs.theme == AppTheme.DARK) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
+                            ),
+                            modifier = Modifier.weight(1f),
+                            contentPadding = PaddingValues(0.dp)
+                        ) { Text("Dark", style = MaterialTheme.typography.bodySmall) }
+                    }
+
+                    Divider(modifier = Modifier.padding(vertical = 8.dp).alpha(0.5f))
+
+                    Text("Data & Backup", style = MaterialTheme.typography.titleSmall, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
                     val context = androidx.compose.ui.platform.LocalContext.current
                     val exportLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
                         androidx.activity.result.contract.ActivityResultContracts.CreateDocument("application/json")
-                    ) { uri ->
-                        if (uri != null) {
-                            viewModel.exportData(context, uri)
-                        }
-                    }
+                    ) { uri -> if (uri != null) viewModel.exportData(context, uri) }
                     
                     val importLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
                         androidx.activity.result.contract.ActivityResultContracts.OpenDocument()
-                    ) { uri ->
-                        if (uri != null) {
-                            viewModel.importData(context, uri)
-                        }
-                    }
+                    ) { uri -> if (uri != null) viewModel.importData(context, uri) }
 
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 4.dp)) {
                         Button(
                             onClick = { exportLauncher.launch("ackwatraq_backup.json") },
                             modifier = Modifier.weight(1f)
@@ -283,6 +257,8 @@ fun SettingsScreen(navController: NavController, viewModel: SettingsViewModel) {
                     }
                 }
             }
+            
+            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }
