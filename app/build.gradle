@@ -37,6 +37,18 @@ android {
     composeOptions {
         kotlinCompilerExtensionVersion '1.4.0'
     }
+    
+    applicationVariants.all { variant ->
+        variant.outputs.all { output ->
+            def buildType = variant.buildType.name.capitalize()
+            def suffix = ""
+            if (buildType == "Release") {
+                buildType = "Beta"
+                suffix = "-unsigned"
+            }
+            outputFileName = "Ackwatraq-${buildType}-v${variant.versionName}${suffix}.apk"
+        }
+    }
 }
 
 dependencies {
