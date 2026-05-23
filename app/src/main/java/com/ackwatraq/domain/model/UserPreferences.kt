@@ -6,9 +6,15 @@ data class UserPreferences(
     val activityLevel: ActivityLevel = ActivityLevel.MODERATE,
     val reminderIntervalMinutes: Int = 60,
     val remindersEnabled: Boolean = true,
-    val useMetric: Boolean = true
+    val useMetric: Boolean = true,
+    val theme: AppTheme = AppTheme.SYSTEM,
+    val nickname: String = ""
 )
 
 enum class ActivityLevel {
     SEDENTARY, LIGHT, MODERATE, ACTIVE, VERY_ACTIVE
+}
+
+enum class AppTheme {
+    SYSTEM, LIGHT, DARK
 }
