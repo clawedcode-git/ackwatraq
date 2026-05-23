@@ -30,10 +30,17 @@ import androidx.compose.material.icons.rounded.Settings
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.ui.Alignment
 
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.graphics.graphicsLayer
@@ -114,55 +121,35 @@ class MainActivity : ComponentActivity() {
                                         )
                                     )
                                 ) {
-                                    NavigationBar(
+                                    Row(
                                         modifier = Modifier.fillMaxSize(),
-                                        containerColor = androidx.compose.ui.graphics.Color.Transparent,
-                                        tonalElevation = 0.dp
+                                        horizontalArrangement = Arrangement.SpaceEvenly,
+                                        verticalAlignment = Alignment.CenterVertically
                                     ) {
-                                        NavigationBarItem(
-                                            selected = currentRoute == "home",
-                                            onClick = { 
-                                                navController.navigate("home") { 
-                                                    popUpTo(navController.graph.startDestinationId) { saveState = true }
-                                                    launchSingleTop = true; restoreState = true 
-                                                } 
-                                            },
-                                            icon = { FancyGradientIcon(Icons.Rounded.Home, currentRoute == "home") },
-                                            label = { Text("Home", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Medium)) }
-                                        )
-                                        NavigationBarItem(
-                                            selected = currentRoute == "history",
-                                            onClick = { 
-                                                navController.navigate("history") { 
-                                                    popUpTo(navController.graph.startDestinationId) { saveState = true }
-                                                    launchSingleTop = true; restoreState = true 
-                                                } 
-                                            },
-                                            icon = { FancyGradientIcon(Icons.Rounded.Timeline, currentRoute == "history") },
-                                            label = { Text("History", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Medium)) }
-                                        )
-                                        NavigationBarItem(
-                                            selected = currentRoute == "achievements",
-                                            onClick = { 
-                                                navController.navigate("achievements") { 
-                                                    popUpTo(navController.graph.startDestinationId) { saveState = true }
-                                                    launchSingleTop = true; restoreState = true 
-                                                } 
-                                            },
-                                            icon = { FancyGradientIcon(Icons.Rounded.EmojiEvents, currentRoute == "achievements") },
-                                            label = { Text("Trophies", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Medium)) }
-                                        )
-                                        NavigationBarItem(
-                                            selected = currentRoute == "settings",
-                                            onClick = { 
-                                                navController.navigate("settings") { 
-                                                    popUpTo(navController.graph.startDestinationId) { saveState = true }
-                                                    launchSingleTop = true; restoreState = true 
-                                                } 
-                                            },
-                                            icon = { FancyGradientIcon(Icons.Rounded.Settings, currentRoute == "settings") },
-                                            label = { Text("Settings", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Medium)) }
-                                        )
+                                        BottomNavItem("Home", Icons.Rounded.Home, currentRoute == "home") {
+                                            navController.navigate("home") {
+                                                popUpTo(navController.graph.startDestinationId) { saveState = true }
+                                                launchSingleTop = true; restoreState = true
+                                            }
+                                        }
+                                        BottomNavItem("History", Icons.Rounded.Timeline, currentRoute == "history") {
+                                            navController.navigate("history") {
+                                                popUpTo(navController.graph.startDestinationId) { saveState = true }
+                                                launchSingleTop = true; restoreState = true
+                                            }
+                                        }
+                                        BottomNavItem("Trophies", Icons.Rounded.EmojiEvents, currentRoute == "achievements") {
+                                            navController.navigate("achievements") {
+                                                popUpTo(navController.graph.startDestinationId) { saveState = true }
+                                                launchSingleTop = true; restoreState = true
+                                            }
+                                        }
+                                        BottomNavItem("Settings", Icons.Rounded.Settings, currentRoute == "settings") {
+                                            navController.navigate("settings") {
+                                                popUpTo(navController.graph.startDestinationId) { saveState = true }
+                                                launchSingleTop = true; restoreState = true
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -225,4 +212,38 @@ fun FancyGradientIcon(imageVector: androidx.compose.ui.graphics.vector.ImageVect
                 }
             }
     )
+}
+
+@Composable
+fun BottomNavItem(
+    label: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    selected: Boolean,
+    onClick: () -> Unit
+) {
+    val bgColor = if (selected) {
+        MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
+    } else {
+        androidx.compose.ui.graphics.Color.Transparent
+    }
+
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+        modifier = Modifier
+            .clip(RoundedCornerShape(20.dp))
+            .background(bgColor)
+            .clickable(onClick = onClick)
+            .padding(horizontal = 16.dp, vertical = 6.dp)
+    ) {
+        FancyGradientIcon(icon, selected)
+        Spacer(modifier = Modifier.height(2.dp))
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelSmall.copy(
+                fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
+                color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+            )
+        )
+    }
 }
