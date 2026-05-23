@@ -1,6 +1,7 @@
 package com.ackwatraq.ui.achievements
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -93,69 +94,89 @@ fun AchievementsScreen(navController: NavController, viewModel: AchievementsView
 
 @Composable
 fun AchievementBadge(achievement: Achievement) {
-    val (emoji, bgTint) = getAchievementStyle(achievement.title, achievement.unlocked)
+    val (emoji, bgGradient) = getAchievementStyle(achievement.title, achievement.unlocked)
     
-    val cardColor = if (achievement.unlocked) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant
-    val textColor = if (achievement.unlocked) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
-    val iconAlpha = if (achievement.unlocked) 1f else 0.3f
+    val textColor = if (achievement.unlocked) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
+    val iconAlpha = if (achievement.unlocked) 1f else 0.4f
 
-    Card(
-        modifier = Modifier.fillMaxWidth().aspectRatio(1f),
-        colors = CardDefaults.cardColors(containerColor = cardColor),
-        shape = CircleShape,
-        elevation = CardDefaults.cardElevation(defaultElevation = if (achievement.unlocked) 6.dp else 0.dp)
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .aspectRatio(0.85f) // slightly taller for better text layout
+            .clip(androidx.compose.foundation.shape.RoundedCornerShape(24.dp))
+            .background(
+                brush = androidx.compose.ui.graphics.Brush.linearGradient(
+                    colors = bgGradient,
+                    start = androidx.compose.ui.geometry.Offset(0f, 0f),
+                    end = androidx.compose.ui.geometry.Offset(100f, 300f)
+                )
+            )
+            .let { 
+                if (achievement.unlocked) {
+                    it.border(
+                        width = 2.dp, 
+                        color = Color.White.copy(alpha = 0.4f), 
+                        shape = androidx.compose.foundation.shape.RoundedCornerShape(24.dp)
+                    )
+                } else it 
+            }
     ) {
         Column(
-            modifier = Modifier.fillMaxSize().padding(8.dp),
+            modifier = Modifier.fillMaxSize().padding(10.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
             Box(
                 modifier = Modifier
-                    .size(40.dp)
+                    .size(52.dp)
                     .clip(CircleShape)
-                    .background(bgTint.copy(alpha = if (achievement.unlocked) 0.2f else 0.05f)),
+                    .background(Color.White.copy(alpha = if (achievement.unlocked) 0.25f else 0.1f)),
                 contentAlignment = Alignment.Center
             ) {
-                Text(text = emoji, style = MaterialTheme.typography.titleLarge, modifier = Modifier.alpha(iconAlpha))
+                Text(
+                    text = emoji, 
+                    style = MaterialTheme.typography.headlineMedium, 
+                    modifier = Modifier.alpha(iconAlpha)
+                )
             }
-            Spacer(modifier = Modifier.height(6.dp))
+            Spacer(modifier = Modifier.height(10.dp))
             Text(
                 text = achievement.title, 
                 style = MaterialTheme.typography.labelSmall, 
                 color = textColor, 
-                fontWeight = FontWeight.Bold,
+                fontWeight = FontWeight.ExtraBold,
                 textAlign = TextAlign.Center,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
-            Spacer(modifier = Modifier.height(2.dp))
+            Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = achievement.description, 
-                style = MaterialTheme.typography.bodySmall.copy(fontSize = 8.sp), 
-                color = textColor.copy(alpha = 0.8f),
+                style = MaterialTheme.typography.bodySmall.copy(fontSize = 10.sp), 
+                color = textColor.copy(alpha = 0.9f),
                 textAlign = TextAlign.Center,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
-                lineHeight = 10.sp
+                lineHeight = 12.sp
             )
         }
     }
 }
 
-fun getAchievementStyle(title: String, unlocked: Boolean): Pair<String, Color> {
-    if (!unlocked) return "🔒" to Color.Gray
+fun getAchievementStyle(title: String, unlocked: Boolean): Pair<String, List<Color>> {
+    if (!unlocked) return "🔒" to listOf(Color(0xFFE0E0E0), Color(0xFFBDBDBD)) // Gray out locked achievements
     
+    // Vibrant Gradients for unlocked achievements
     return when {
-        title.contains("First", ignoreCase = true) -> "💧" to Color(0xFF2196F3)
-        title.contains("Goal", ignoreCase = true) -> "🎯" to Color(0xFF4CAF50)
-        title.contains("Streak", ignoreCase = true) -> "🔥" to Color(0xFFFF9800)
-        title.contains("Week", ignoreCase = true) -> "📅" to Color(0xFF9C27B0)
-        title.contains("Over", ignoreCase = true) -> "🚀" to Color(0xFFE91E63)
-        title.contains("Early", ignoreCase = true) -> "🌅" to Color(0xFFFFC107)
-        title.contains("Night", ignoreCase = true) -> "🦉" to Color(0xFF3F51B5)
-        title.contains("Ocean", ignoreCase = true) -> "🐋" to Color(0xFF00BCD4)
-        title.contains("Camel", ignoreCase = true) -> "🐫" to Color(0xFFFF5722)
-        else -> "🏆" to Color(0xFFFFC107)
+        title.contains("First", ignoreCase = true) -> "💧" to listOf(Color(0xFF64B5F6), Color(0xFF1976D2))
+        title.contains("Goal", ignoreCase = true) -> "🎯" to listOf(Color(0xFF81C784), Color(0xFF388E3C))
+        title.contains("Streak", ignoreCase = true) -> "🔥" to listOf(Color(0xFFFFB74D), Color(0xFFF57C00))
+        title.contains("Week", ignoreCase = true) -> "📅" to listOf(Color(0xFFBA68C8), Color(0xFF7B1FA2))
+        title.contains("Over", ignoreCase = true) -> "🚀" to listOf(Color(0xFFF06292), Color(0xFFC2185B))
+        title.contains("Early", ignoreCase = true) -> "🌅" to listOf(Color(0xFFFFD54F), Color(0xFFFFA000))
+        title.contains("Night", ignoreCase = true) -> "🦉" to listOf(Color(0xFF7986CB), Color(0xFF303F9F))
+        title.contains("Ocean", ignoreCase = true) -> "🐋" to listOf(Color(0xFF4DD0E1), Color(0xFF0097A7))
+        title.contains("Camel", ignoreCase = true) -> "🐫" to listOf(Color(0xFFFF8A65), Color(0xFFE64A19))
+        else -> "🏆" to listOf(Color(0xFFFFD54F), Color(0xFFF57F17))
     }
 }
