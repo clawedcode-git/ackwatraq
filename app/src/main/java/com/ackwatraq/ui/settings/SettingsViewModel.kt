@@ -54,6 +54,17 @@ class SettingsViewModel(private val repository: WaterRepository) : ViewModel() {
         }
     }
 
+    private val gson = com.google.gson.GsonBuilder()
+        .registerTypeAdapter(java.time.LocalDateTime::class.java, object : com.google.gson.JsonSerializer<java.time.LocalDateTime>, com.google.gson.JsonDeserializer<java.time.LocalDateTime> {
+            override fun serialize(src: java.time.LocalDateTime, typeOfSrc: java.lang.reflect.Type, context: com.google.gson.JsonSerializationContext): com.google.gson.JsonElement {
+                return com.google.gson.JsonPrimitive(src.format(java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME))
+            }
+            override fun deserialize(json: com.google.gson.JsonElement, typeOfT: java.lang.reflect.Type, context: com.google.gson.JsonDeserializationContext): java.time.LocalDateTime {
+                return java.time.LocalDateTime.parse(json.asString, java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+            }
+        })
+        .create()
+
     fun exportData(context: android.content.Context, uri: android.net.Uri) {
         viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) {
             try {
@@ -63,7 +74,7 @@ class SettingsViewModel(private val repository: WaterRepository) : ViewModel() {
                 val notifications = repository.getAllNotifications()
 
                 val exportData = com.ackwatraq.domain.model.ExportData(prefs, intakes, achievements, notifications)
-                val jsonString = com.google.gson.Gson().toJson(exportData)
+                val jsonString = gson.toJson(exportData)
 
                 context.contentResolver.openOutputStream(uri)?.use { outputStream ->
                     outputStream.write(jsonString.toByteArray())
@@ -79,7 +90,7 @@ class SettingsViewModel(private val repository: WaterRepository) : ViewModel() {
             try {
                 context.contentResolver.openInputStream(uri)?.use { inputStream ->
                     val jsonString = inputStream.bufferedReader().use { it.readText() }
-                    val exportData = com.google.gson.Gson().fromJson(jsonString, com.ackwatraq.domain.model.ExportData::class.java)
+                    val exportData = gson.fromJson(jsonString, com.ackwatraq.domain.model.ExportData::class.java)
 
                     repository.restoreData(exportData)
                 }
