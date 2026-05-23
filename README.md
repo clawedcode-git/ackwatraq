@@ -1,6 +1,6 @@
 # 💧 ackwatraq
 
-An anime-styled Android app for tracking your daily water intake with gamification elements.
+An Android app for tracking your daily water intake with gamification elements.
 
 ## Features
 
