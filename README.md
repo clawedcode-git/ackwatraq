@@ -2,6 +2,12 @@
 
 An Android app for tracking your daily water intake with premium gamification elements, featuring a stunning state-of-the-art modern visual identity.
 
+## 📸 Screenshots
+
+| Home Dashboard | History Analytics | Achievements Trophies | User Settings |
+| :---: | :---: | :---: | :---: |
+| <img src="screenshots/screenshot_home.png" width="200" alt="Home Screen" /> | <img src="screenshots/screenshot_history.png" width="200" alt="History Screen" /> | <img src="screenshots/screenshot_trophies.png" width="200" alt="Trophies Screen" /> | <img src="screenshots/screenshot_settings.png" width="200" alt="Settings Screen" /> |
+
 ## ✨ Key Features
 
 - **Figma Redesign Modernization**: Exquisite new theme featuring curated harmonious palettes, vibrant gradients, custom typography, and dynamic transitions.
