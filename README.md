@@ -1,53 +1,57 @@
 # 💧 ackwatraq
 
-An Android app for tracking your daily water intake with gamification elements.
+An Android app for tracking your daily water intake with premium gamification elements, featuring a stunning state-of-the-art modern visual identity.
 
-## Features
+## ✨ Key Features
 
-- **Quick-add logging**: 250mL, 500mL, 1L buttons + custom input
-- **Goal calculation**: Based on weight, activity level, and climate
-- **Progress dashboard**: Visual progress with anime mascot "Aqua-chan"
-- **Reminders**: Configurable notifications to stay hydrated
-- **Streaks**: Track consecutive days meeting your hydration goal
-- **Achievements**: Unlock badges for milestones (volumes, streaks, consistency)
-- **Gamified UI**: Pastel anime palette, mascot reactions, celebration animations
-- **Local-first**: All data stored locally with Room + DataStore
+- **Figma Redesign Modernization**: Exquisite new theme featuring curated harmonious palettes, vibrant gradients, custom typography, and dynamic transitions.
+- **Interactive 3D Bottom Bar**: Sleek, compact bottom navigation panel designed with customized 3D depth shadows and ambient glows covering labels for maximum tactile feel.
+- **Quick-add Logging**: Easy 250mL, 500mL, 1L preset add buttons + custom volume input.
+- **Goal Calculation**: Advanced goal estimations based on weight, activity levels, and custom preferences.
+- **Achievements & Trophies**: Beautiful custom badge grids featuring unlock milestones (volumes, consistency streaks, and level ups).
+- **History & Progress Insights**: Weekly statistics graphs and log charts showcasing complete hydration habits.
+- **Reminders & Local Syncing**: Configurable notification scheduling, local-first architectures with Room DB and Datastore.
 
-## Tech Stack
+## 🛠️ Tech Stack
 
 - **Language**: Kotlin
-- **UI**: Jetpack Compose + Material 3 (anime-themed)
+- **UI**: Jetpack Compose + Material Design 3
 - **Storage**: Room Database + DataStore Preferences
-- **Animations**: Lottie Compose
-- **Charts**: MPAndroidChart
-- **Architecture**: MVVM with Repository pattern
+- **Animations**: Custom Compose-native transitions and spring animations
+- **Charts**: MPAndroidChart Integration
+- **Architecture**: Clean MVVM (Model-View-ViewModel) + Repositories
 
-## Getting Started
+## 🚀 Getting Started
 
-1. Clone the repo
-2. Open in Android Studio (Hedgehog or newer)
-3. Sync Gradle
-4. Run on device/emulator (min SDK 26)
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/ackwatraq/ackwatraq.git
+   ```
+2. Open the project in Android Studio (Hedgehog / Koala or newer).
+3. Ensure Android SDK Platform 34 and Build Tools 30.0.3 are installed.
+4. Build and run on a connected physical device or Android Virtual Device (AVD).
 
-## Project Structure
+## 📁 Project Structure
 
 ```
 app/src/main/java/com/ackwatraq/
 ├── data/
 │   ├── db/          # Room entities, DAO, database
-│   ├── repository/  # Data layer
+│   ├── repository/  # Data repositories
 │   └── store/       # DataStore preferences
 ├── domain/
-│   ├── model/       # Intake, Achievement, UserPrefs
-│   └── usecase/     # Goal calc, streak logic, XP calc
+│   ├── model/       # Intake records, Achievement models
+│   └── usecase/     # Goal logic & XP calculator
 ├── ui/
-│   ├── home/        # Dashboard + quick-add
-│   ├── history/     # Past logs + charts
-│   ├── achievements/# Badges + progress
-│   └── settings/    # Goal, reminders, units
-└── worker/          # Reminder notifications
+│   ├── home/        # Dashboard + quick-add logging UI
+│   ├── history/     # Visual charts and stats logs
+│   ├── achievements/# Gamification badges list
+│   ├── settings/    # Goal settings & preferences
+│   └── theme/       # Figma redesign typography & style tokens
+└── worker/          # Notification alarms manager
 ```
 
-## License
+## 📄 License
 
-MIT
+This project is licensed under the MIT License.
+
