@@ -30,6 +30,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Brush
 import androidx.navigation.NavController
 import com.ackwatraq.ui.utils.bouncyClick
 import kotlin.math.roundToInt
@@ -218,21 +222,38 @@ fun HomeScreen(navController: NavController, viewModel: HomeViewModel) {
                         )
                     }
 
-                    // Circular Progress Centerpiece
+                    // Circular Progress Centerpiece with Glowing Gradient Rings
                     Box(contentAlignment = Alignment.Center, modifier = Modifier.size(280.dp)) {
-                        CircularProgressIndicator(
-                            progress = 1f,
-                            modifier = Modifier.fillMaxSize(),
-                            color = MaterialTheme.colorScheme.surfaceVariant,
-                            strokeWidth = 20.dp
-                        )
-                        CircularProgressIndicator(
-                            progress = animatedProgress,
-                            modifier = Modifier.fillMaxSize(),
-                            color = MaterialTheme.colorScheme.primary,
-                            strokeWidth = 20.dp,
-                            strokeCap = StrokeCap.Round
-                        )
+                        val primaryColor = MaterialTheme.colorScheme.primary
+                        val secondaryColor = MaterialTheme.colorScheme.secondary
+                        val trackColor = MaterialTheme.colorScheme.surfaceVariant
+                        Canvas(modifier = Modifier.fillMaxSize()) {
+                            val strokePx = with(this) { 20.dp.toPx() }
+                            val sizePx = this.size.minDimension - strokePx
+                            val offsetPx = strokePx / 2
+                            
+                            // Draw background track ring
+                            drawCircle(
+                                color = trackColor,
+                                radius = sizePx / 2,
+                                center = this.center,
+                                style = androidx.compose.ui.graphics.drawscope.Stroke(width = strokePx)
+                            )
+                            
+                            // Draw glowing progress arc using linear gradient
+                            drawArc(
+                                brush = androidx.compose.ui.graphics.Brush.linearGradient(
+                                    colors = listOf(primaryColor, secondaryColor)
+                                ),
+                                startAngle = -90f,
+                                sweepAngle = animatedProgress * 360f,
+                                useCenter = false,
+                                style = androidx.compose.ui.graphics.drawscope.Stroke(
+                                    width = strokePx,
+                                    cap = StrokeCap.Round
+                                )
+                            )
+                        }
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.Center
@@ -321,48 +342,47 @@ fun HomeScreen(navController: NavController, viewModel: HomeViewModel) {
                         }
                     }
 
-                    // Intake Buttons
-                    Text("Quick Add", style = MaterialTheme.typography.titleMedium, modifier = Modifier.align(Alignment.Start))
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Surface(
-                            shape = RoundedCornerShape(16.dp),
-                            color = MaterialTheme.colorScheme.primary,
-                            contentColor = MaterialTheme.colorScheme.onPrimary,
-                            modifier = Modifier.weight(1f).bouncyClick { viewModel.addWater(if (useMetric) 250 else 237) }
-                        ) {
-                            Box(modifier = Modifier.fillMaxWidth().padding(vertical = 10.dp), contentAlignment = Alignment.Center) {
-                                Text(if (useMetric) "+250" else "+8", style = MaterialTheme.typography.labelLarge) 
+                    // Intake Buttons with Premium Gradients and Shadow Shadows
+                    Text("Quick Add", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, modifier = Modifier.align(Alignment.Start))
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                        val presets = listOf(
+                            Triple(if (useMetric) 250 else 237, if (useMetric) "+250" else "+8", MaterialTheme.colorScheme.primary),
+                            Triple(if (useMetric) 500 else 503, if (useMetric) "+500" else "+17", MaterialTheme.colorScheme.primary),
+                            Triple(if (useMetric) 1000 else 1005, if (useMetric) "+1L" else "+34", MaterialTheme.colorScheme.primary)
+                        )
+                        
+                        presets.forEach { (amount, labelText, color) ->
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(48.dp)
+                                    .bouncyClick { viewModel.addWater(amount) }
+                                    .background(
+                                        brush = androidx.compose.ui.graphics.Brush.linearGradient(
+                                            colors = listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.secondary)
+                                        ),
+                                        shape = RoundedCornerShape(16.dp)
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(labelText, style = MaterialTheme.typography.labelLarge, color = Color.White, fontWeight = FontWeight.Bold) 
                             }
                         }
-                        Surface(
-                            shape = RoundedCornerShape(16.dp),
-                            color = MaterialTheme.colorScheme.primary,
-                            contentColor = MaterialTheme.colorScheme.onPrimary,
-                            modifier = Modifier.weight(1f).bouncyClick { viewModel.addWater(if (useMetric) 500 else 503) }
+                        
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(48.dp)
+                                .bouncyClick { showCustomDialog = true }
+                                .background(
+                                    brush = androidx.compose.ui.graphics.Brush.linearGradient(
+                                        colors = listOf(MaterialTheme.colorScheme.tertiary, MaterialTheme.colorScheme.primary)
+                                    ),
+                                    shape = RoundedCornerShape(16.dp)
+                                ),
+                            contentAlignment = Alignment.Center
                         ) {
-                            Box(modifier = Modifier.fillMaxWidth().padding(vertical = 10.dp), contentAlignment = Alignment.Center) {
-                                Text(if (useMetric) "+500" else "+17", style = MaterialTheme.typography.labelLarge) 
-                            }
-                        }
-                        Surface(
-                            shape = RoundedCornerShape(16.dp),
-                            color = MaterialTheme.colorScheme.primary,
-                            contentColor = MaterialTheme.colorScheme.onPrimary,
-                            modifier = Modifier.weight(1f).bouncyClick { viewModel.addWater(if (useMetric) 1000 else 1005) }
-                        ) {
-                            Box(modifier = Modifier.fillMaxWidth().padding(vertical = 10.dp), contentAlignment = Alignment.Center) {
-                                Text(if (useMetric) "+1L" else "+34", style = MaterialTheme.typography.labelLarge) 
-                            }
-                        }
-                        Surface(
-                            shape = RoundedCornerShape(16.dp),
-                            color = MaterialTheme.colorScheme.secondary,
-                            contentColor = MaterialTheme.colorScheme.onSecondary,
-                            modifier = Modifier.weight(1f).bouncyClick { showCustomDialog = true }
-                        ) {
-                            Box(modifier = Modifier.fillMaxWidth().padding(vertical = 10.dp), contentAlignment = Alignment.Center) {
-                                Text("+ ?", style = MaterialTheme.typography.labelLarge) 
-                            }
+                            Text("+ ?", style = MaterialTheme.typography.labelLarge, color = Color.White, fontWeight = FontWeight.Bold) 
                         }
                     }
 
