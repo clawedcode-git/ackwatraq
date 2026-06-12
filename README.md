@@ -4,12 +4,19 @@ An Android app for tracking your daily water intake with premium gamification el
 
 ## 📸 Screenshots
 
+### App Screens
 | Home Dashboard | History Analytics | Achievements Trophies | User Settings |
 | :---: | :---: | :---: | :---: |
 | <img src="screenshots/screenshot_home.png" width="200" alt="Home Screen" /> | <img src="screenshots/screenshot_history.png" width="200" alt="History Screen" /> | <img src="screenshots/screenshot_trophies.png" width="200" alt="Trophies Screen" /> | <img src="screenshots/screenshot_settings.png" width="200" alt="Settings Screen" /> |
 
+### 💧 Aqua-chan Mascot States
+| Dehydrated (0% - 30%) | Healthy (31% - 79%) | Active (80% - 99%) | Fully Hydrated (100%+) |
+| :---: | :---: | :---: | :---: |
+| <img src="screenshots/mascot_dehydrated.png" width="160" alt="Dehydrated" /> | <img src="screenshots/mascot_healthy.png" width="160" alt="Healthy" /> | <img src="screenshots/mascot_active.png" width="160" alt="Active" /> | <img src="screenshots/mascot_completed.png" width="160" alt="Fully Hydrated" /> |
+
 ## ✨ Key Features
 
+- **Dynamic Hydration Mascot (Aqua-chan) 💧**: Meet Aqua-chan, your cute companion on the home dashboard! She reacts dynamically to your daily progress with shifting expressions (😭 ➜ 😊 ➜ ⚡ ➜ 👑), custom glassmorphic background colors, and helpful speech bubbles tailored to your current hydration state.
 - **Figma Redesign Modernization**: Exquisite new theme featuring curated harmonious palettes, vibrant gradients, custom typography, and dynamic transitions.
 - **Interactive 3D Bottom Bar**: Sleek, compact bottom navigation panel designed with customized 3D depth shadows and ambient glows covering labels for maximum tactile feel.
 - **Quick-add Logging**: Easy 250mL, 500mL, 1L preset add buttons + custom volume input.

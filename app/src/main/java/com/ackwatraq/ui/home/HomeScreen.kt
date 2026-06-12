@@ -17,7 +17,9 @@ import androidx.compose.animation.SizeTransform
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Notifications
@@ -26,6 +28,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -342,6 +345,147 @@ fun HomeScreen(navController: NavController, viewModel: HomeViewModel) {
                         }
                     }
 
+                    // Aqua-chan Mascot Card
+                    val progressPercent = rawProgress
+                    val isDark = isSystemInDarkTheme()
+                    
+                    val mascotConfig = remember(progressPercent, isDark) {
+                        when {
+                            progressPercent <= 0.3f -> {
+                                val bgColors = if (isDark) {
+                                    listOf(Color(0xFF263238), Color(0xFF1E272C))
+                                } else {
+                                    listOf(Color(0xFFECEFF1), Color(0xFFCFD8DC))
+                                }
+                                val txtColor = if (isDark) Color(0xFFB0BEC5) else Color(0xFF37474F)
+                                MascotConfig(
+                                    character = "😭",
+                                    speech = "I'm dry... please log some water!",
+                                    brush = Brush.linearGradient(bgColors),
+                                    textColor = txtColor
+                                )
+                            }
+                            progressPercent < 0.8f -> {
+                                val bgColors = if (isDark) {
+                                    listOf(Color(0xFF083344), Color(0xFF0A2540))
+                                } else {
+                                    listOf(Color(0xFFE8F0FE), Color(0xFFC2D9FF))
+                                }
+                                val txtColor = if (isDark) Color(0xFF00E5FF) else Color(0xFF0F62FE)
+                                MascotConfig(
+                                    character = "😊",
+                                    speech = "Doing great! Keep sipping!",
+                                    brush = Brush.linearGradient(bgColors),
+                                    textColor = txtColor
+                                )
+                            }
+                            progressPercent < 1.0f -> {
+                                val bgColors = if (isDark) {
+                                    listOf(Color(0xFF1E1B4B), Color(0xFF311042))
+                                } else {
+                                    listOf(Color(0xFFE0F7FA), Color(0xFF80DEEA))
+                                }
+                                val txtColor = if (isDark) Color(0xFFD8B4FE) else Color(0xFF006064)
+                                MascotConfig(
+                                    character = "⚡",
+                                    speech = "Almost there! You're super active!",
+                                    brush = Brush.linearGradient(bgColors),
+                                    textColor = txtColor
+                                )
+                            }
+                            else -> {
+                                MascotConfig(
+                                    character = "👑",
+                                    speech = "Goal achieved! You're a Hydration Hero!",
+                                    brush = Brush.linearGradient(listOf(Color(0xFFFFE082), Color(0xFFFFB300))),
+                                    textColor = Color(0xFF3E2723)
+                                )
+                            }
+                        }
+                    }
+
+                    var mascotScale by remember { mutableStateOf(1f) }
+                    LaunchedEffect(mascotConfig.character) {
+                        mascotScale = 0.8f
+                        kotlinx.coroutines.delay(100)
+                        mascotScale = 1.1f
+                        kotlinx.coroutines.delay(150)
+                        mascotScale = 1.0f
+                    }
+                    val scaleAnimation by animateFloatAsState(
+                        targetValue = mascotScale,
+                        animationSpec = androidx.compose.animation.core.spring(
+                            dampingRatio = androidx.compose.animation.core.Spring.DampingRatioMediumBouncy,
+                            stiffness = androidx.compose.animation.core.Spring.StiffnessLow
+                        ),
+                        label = "mascotScale"
+                    )
+
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(110.dp)
+                            .bouncyClick {
+                                mascotScale = 0.9f
+                            }
+                            .background(
+                                brush = mascotConfig.brush,
+                                shape = RoundedCornerShape(24.dp)
+                            )
+                            .padding(16.dp),
+                        contentAlignment = Alignment.CenterStart
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(16.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(64.dp)
+                                    .graphicsLayer {
+                                        scaleX = scaleAnimation
+                                        scaleY = scaleAnimation
+                                    }
+                                    .background(Color.White.copy(alpha = 0.25f), shape = CircleShape),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(mascotConfig.character, fontSize = 36.sp)
+                            }
+                            
+                            Column(
+                                modifier = Modifier.weight(1f),
+                                verticalArrangement = Arrangement.Center
+                            ) {
+                                Text(
+                                    text = "Aqua-chan",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = mascotConfig.textColor
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                
+                                AnimatedContent(
+                                    targetState = mascotConfig.speech,
+                                    transitionSpec = {
+                                        (fadeIn(animationSpec = tween(300)) + slideInVertically(animationSpec = tween(300)) { it / 2 }) with
+                                                (fadeOut(animationSpec = tween(200)) + slideOutVertically(animationSpec = tween(200)) { -it / 2 })
+                                    },
+                                    label = "speechTransition"
+                                ) { targetText ->
+                                    Text(
+                                        text = targetText,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = mascotConfig.textColor.copy(alpha = 0.85f),
+                                        fontWeight = FontWeight.Medium
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
                     // Intake Buttons with Premium Gradients and Shadow Shadows
                     Text("Quick Add", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, modifier = Modifier.align(Alignment.Start))
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -456,3 +600,10 @@ fun HomeScreen(navController: NavController, viewModel: HomeViewModel) {
         )
     }
 }
+
+private data class MascotConfig(
+    val character: String,
+    val speech: String,
+    val brush: Brush,
+    val textColor: Color
+)
