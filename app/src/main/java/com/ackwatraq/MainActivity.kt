@@ -75,7 +75,6 @@ class MainActivity : ComponentActivity() {
                 Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
                     val navController = rememberNavController()
 
-                    val repository = (application as AckwatraqApplication).repository
                     val stepRepository = (application as AckwatraqApplication).stepRepository
 
                     val factory = object : ViewModelProvider.Factory {

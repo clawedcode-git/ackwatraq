@@ -11,7 +11,7 @@ import com.ackwatraq.data.db.dao.IntakeDao
 import com.ackwatraq.data.db.dao.AchievementDao
 import com.ackwatraq.data.db.dao.NotificationDao
 
-@Database(entities = [IntakeRecord::class, Achievement::class, NotificationRecord::class], version = 2)
+@Database(entities = [IntakeRecord::class, Achievement::class, NotificationRecord::class], version = 2, exportSchema = false)
 @TypeConverters(DateTimeConverter::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun intakeDao(): IntakeDao
