@@ -8,7 +8,9 @@ data class UserPreferences(
     val remindersEnabled: Boolean = true,
     val useMetric: Boolean = true,
     val theme: AppTheme = AppTheme.SYSTEM,
-    val nickname: String = ""
+    val nickname: String = "",
+    val quietHoursStart: Int = 22,
+    val quietHoursEnd: Int = 7
 )
 
 enum class ActivityLevel {

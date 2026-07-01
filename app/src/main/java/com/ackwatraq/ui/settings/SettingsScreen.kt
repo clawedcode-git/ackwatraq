@@ -45,6 +45,7 @@ fun SettingsScreen(navController: NavController, viewModel: SettingsViewModel) {
             ) {
                 var showNicknameDialog by remember { mutableStateOf(false) }
                 var showGoalDialog by remember { mutableStateOf(false) }
+                var showQuietHoursDialog by remember { mutableStateOf(false) }
 
                 Column(modifier = Modifier.padding(12.dp)) {
                     Text("⚙️ User Preferences", style = MaterialTheme.typography.titleMedium, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
@@ -130,6 +131,20 @@ fun SettingsScreen(navController: NavController, viewModel: SettingsViewModel) {
                             modifier = Modifier.height(24.dp)
                         )
                     }
+
+                    Divider(modifier = Modifier.padding(vertical = 4.dp).alpha(0.5f))
+
+                    // Quiet Hours
+                    Row(
+                        modifier = Modifier.fillMaxWidth().clickable { showQuietHoursDialog = true }.padding(vertical = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("🤫 Quiet Hours", style = MaterialTheme.typography.titleSmall, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
+                        val startFmt = String.format("%02d:00", prefs.quietHoursStart)
+                        val endFmt = String.format("%02d:00", prefs.quietHoursEnd)
+                        Text("$startFmt to $endFmt", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary)
+                    }
                 }
 
                 // Dialogs
@@ -185,6 +200,57 @@ fun SettingsScreen(navController: NavController, viewModel: SettingsViewModel) {
                             ) { Text("Save") }
                         },
                         dismissButton = { TextButton(onClick = { showGoalDialog = false }) { Text("Cancel") } }
+                    )
+                }
+
+                if (showQuietHoursDialog) {
+                    var startVal by remember { mutableStateOf(prefs.quietHoursStart.toFloat()) }
+                    var endVal by remember { mutableStateOf(prefs.quietHoursEnd.toFloat()) }
+                    AlertDialog(
+                        onDismissRequest = { showQuietHoursDialog = false },
+                        title = { Text("Set Quiet Hours") },
+                        text = {
+                            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                                Text("Quiet hours define the window when reminder notifications are silenced.", style = MaterialTheme.typography.bodyMedium)
+                                
+                                Column {
+                                    Text(
+                                        text = String.format("Start Hour: %02d:00", startVal.toInt()),
+                                        style = MaterialTheme.typography.titleSmall,
+                                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+                                    )
+                                    Slider(
+                                        value = startVal,
+                                        onValueChange = { startVal = it },
+                                        valueRange = 0f..23f,
+                                        steps = 22
+                                    )
+                                }
+                                
+                                Column {
+                                    Text(
+                                        text = String.format("End Hour: %02d:00", endVal.toInt()),
+                                        style = MaterialTheme.typography.titleSmall,
+                                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+                                    )
+                                    Slider(
+                                        value = endVal,
+                                        onValueChange = { endVal = it },
+                                        valueRange = 0f..23f,
+                                        steps = 22
+                                    )
+                                }
+                            }
+                        },
+                        confirmButton = {
+                            TextButton(onClick = {
+                                viewModel.setQuietHours(startVal.toInt(), endVal.toInt())
+                                showQuietHoursDialog = false
+                            }) { Text("Save") }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = { showQuietHoursDialog = false }) { Text("Cancel") }
+                        }
                     )
                 }
             }

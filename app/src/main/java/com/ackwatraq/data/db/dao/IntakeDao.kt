@@ -15,6 +15,9 @@ interface IntakeDao {
     @Query("SELECT SUM(amountMl) FROM intake_records WHERE timestamp >= :start AND timestamp < :end")
     suspend fun getTotalIntakeBetween(start: LocalDateTime, end: LocalDateTime): Int?
 
+    @Query("SELECT * FROM intake_records ORDER BY timestamp DESC LIMIT 1")
+    suspend fun getMostRecentRecord(): IntakeRecord?
+
     @Query("SELECT * FROM intake_records")
     suspend fun getAllRecords(): List<IntakeRecord>
 

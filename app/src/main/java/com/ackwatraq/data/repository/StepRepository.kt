@@ -46,6 +46,7 @@ class StepRepository(private val context: Context) : SensorEventListener {
             
             val todaySteps = totalSteps - baseline
             _currentSteps.value = todaySteps
+            prefs.edit().putInt("today_steps", todaySteps).apply()
         }
     }
 

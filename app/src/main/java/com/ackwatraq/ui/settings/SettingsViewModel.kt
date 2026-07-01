@@ -54,6 +54,13 @@ class SettingsViewModel(private val repository: WaterRepository) : ViewModel() {
         }
     }
 
+    fun setQuietHours(startHour: Int, endHour: Int) {
+        viewModelScope.launch {
+            val currentPrefs = repository.getUserPreferences()
+            repository.saveUserPreferences(currentPrefs.copy(quietHoursStart = startHour, quietHoursEnd = endHour))
+        }
+    }
+
     private val gson = com.google.gson.GsonBuilder()
         .registerTypeAdapter(java.time.LocalDateTime::class.java, object : com.google.gson.JsonSerializer<java.time.LocalDateTime>, com.google.gson.JsonDeserializer<java.time.LocalDateTime> {
             override fun serialize(src: java.time.LocalDateTime, typeOfSrc: java.lang.reflect.Type, context: com.google.gson.JsonSerializationContext): com.google.gson.JsonElement {

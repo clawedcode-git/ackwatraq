@@ -29,6 +29,15 @@ class WaterRepository(
         intakeDao.insert(IntakeRecord(amountMl = amountMl, drinkType = drinkType))
         checkAchievements()
         
+        // Reset last alert steps on intake log
+        try {
+            val stepPrefs = context.getSharedPreferences("step_prefs", android.content.Context.MODE_PRIVATE)
+            val todaySteps = stepPrefs.getInt("today_steps", 0)
+            stepPrefs.edit().putInt("last_alert_steps", todaySteps).apply()
+        } catch (e: Exception) {
+            android.util.Log.e("WaterRepository", "Failed to reset alert steps baseline", e)
+        }
+        
         val prefs = getUserPreferences()
         if (prefs.remindersEnabled) {
             val request = OneTimeWorkRequestBuilder<ReminderWorker>()
@@ -70,6 +79,10 @@ class WaterRepository(
         val start = date.toLocalDate().atStartOfDay()
         val end = start.plusDays(1)
         return intakeDao.getRecordsBetween(start, end)
+    }
+
+    suspend fun getMostRecentRecord(): IntakeRecord? {
+        return intakeDao.getMostRecentRecord()
     }
 
     suspend fun getHistoryBetween(start: java.time.LocalDate, end: java.time.LocalDate): Map<java.time.LocalDate, Int> {
@@ -223,6 +236,8 @@ class WaterRepository(
     private val REMINDERS_KEY = androidx.datastore.preferences.core.booleanPreferencesKey("reminders_enabled")
     private val METRIC_KEY = androidx.datastore.preferences.core.booleanPreferencesKey("use_metric")
     private val NICKNAME_KEY = androidx.datastore.preferences.core.stringPreferencesKey("nickname")
+    private val QUIET_START_KEY = androidx.datastore.preferences.core.intPreferencesKey("quiet_hours_start")
+    private val QUIET_END_KEY = androidx.datastore.preferences.core.intPreferencesKey("quiet_hours_end")
 
     val userPreferencesFlow: Flow<UserPreferences> = dataStore.data.map { prefs ->
         val themeStr = prefs[THEME_KEY] ?: com.ackwatraq.domain.model.AppTheme.SYSTEM.name
@@ -230,13 +245,17 @@ class WaterRepository(
         val reminders = prefs[REMINDERS_KEY] ?: true
         val metric = prefs[METRIC_KEY] ?: true
         val nick = prefs[NICKNAME_KEY] ?: ""
+        val quietStart = prefs[QUIET_START_KEY] ?: 22
+        val quietEnd = prefs[QUIET_END_KEY] ?: 7
         
         UserPreferences(
             theme = com.ackwatraq.domain.model.AppTheme.valueOf(themeStr),
             dailyGoalMl = dailyGoal,
             remindersEnabled = reminders,
             useMetric = metric,
-            nickname = nick
+            nickname = nick,
+            quietHoursStart = quietStart,
+            quietHoursEnd = quietEnd
         )
     }
 
@@ -284,6 +303,8 @@ class WaterRepository(
             preferences[REMINDERS_KEY] = prefs.remindersEnabled
             preferences[METRIC_KEY] = prefs.useMetric
             preferences[NICKNAME_KEY] = prefs.nickname
+            preferences[QUIET_START_KEY] = prefs.quietHoursStart
+            preferences[QUIET_END_KEY] = prefs.quietHoursEnd
         }
     }
 
