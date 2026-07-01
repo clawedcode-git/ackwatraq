@@ -8,5 +8,6 @@ import java.time.LocalDateTime
 data class IntakeRecord(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val amountMl: Int,
-    val timestamp: LocalDateTime = LocalDateTime.now()
+    val timestamp: LocalDateTime = LocalDateTime.now(),
+    val drinkType: String? = "Water"
 )

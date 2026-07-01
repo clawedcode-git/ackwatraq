@@ -64,9 +64,9 @@ class HomeViewModel(
         }
     }
 
-    fun addWater(amount: Int) {
+    fun addWater(amount: Int, drinkType: String = "Water") {
         viewModelScope.launch {
-            repository.logIntake(amount)
+            repository.logIntake(amount, drinkType)
             _intake.value = repository.getTodayIntake()
         }
     }

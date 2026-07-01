@@ -25,8 +25,8 @@ class WaterRepository(
     val notificationDao: NotificationDao,
     private val dataStore: androidx.datastore.core.DataStore<androidx.datastore.preferences.core.Preferences>
 ) {
-    suspend fun logIntake(amountMl: Int) {
-        intakeDao.insert(IntakeRecord(amountMl = amountMl))
+    suspend fun logIntake(amountMl: Int, drinkType: String = "Water") {
+        intakeDao.insert(IntakeRecord(amountMl = amountMl, drinkType = drinkType))
         checkAchievements()
         
         val prefs = getUserPreferences()
@@ -44,10 +44,26 @@ class WaterRepository(
         }
     }
 
+    fun getHydrationCoefficient(drinkType: String?): Float {
+        return when (drinkType) {
+            "Water", "Pure Water" -> 1.0f
+            "Tea", "Herbal Tea" -> 0.95f
+            "Sports Drink", "Sports Drinks / Electrolytes" -> 1.0f
+            "Coffee" -> 0.8f
+            "Soda / Juice", "Soda", "Juice", "Soda & Juice" -> 0.6f
+            else -> 1.0f
+        }
+    }
+
+    fun calculateEffectiveHydration(amountMl: Int, drinkType: String?): Int {
+        return Math.round(amountMl * getHydrationCoefficient(drinkType))
+    }
+
     suspend fun getTodayIntake(): Int {
         val start = LocalDateTime.now().toLocalDate().atStartOfDay()
         val end = start.plusDays(1)
-        return intakeDao.getTotalIntakeBetween(start, end) ?: 0
+        val records = intakeDao.getRecordsBetween(start, end)
+        return records.sumOf { calculateEffectiveHydration(it.amountMl, it.drinkType) }
     }
 
     suspend fun getRecordsForDate(date: LocalDateTime): List<IntakeRecord> {
@@ -74,10 +90,24 @@ class WaterRepository(
         for (record in records) {
             val date = record.timestamp.toLocalDate()
             if (historyData.containsKey(date)) {
-                historyData[date] = (historyData[date] ?: 0) + record.amountMl
+                val effectiveAmount = calculateEffectiveHydration(record.amountMl, record.drinkType)
+                historyData[date] = (historyData[date] ?: 0) + effectiveAmount
             }
         }
         return historyData
+    }
+
+    suspend fun getDrinkBreakdownBetween(start: java.time.LocalDate, end: java.time.LocalDate): Map<String, Int> {
+        val startDateTime = start.atStartOfDay()
+        val endDateTime = end.plusDays(1).atStartOfDay()
+        val records = intakeDao.getRecordsBetween(startDateTime, endDateTime)
+        
+        val breakdown = mutableMapOf<String, Int>()
+        for (record in records) {
+            val type = record.drinkType ?: "Water"
+            breakdown[type] = (breakdown[type] ?: 0) + record.amountMl
+        }
+        return breakdown
     }
 
     suspend fun getAchievements(): List<Achievement> {
@@ -267,8 +297,11 @@ class WaterRepository(
         achievementDao.clearAll()
         notificationDao.clearAll()
 
-        // Insert all
-        intakeDao.insertAll(exportData.intakeRecords)
+        // Insert all with sanitized drinkType
+        val sanitizedIntakes = exportData.intakeRecords.map {
+            if (it.drinkType == null) it.copy(drinkType = "Water") else it
+        }
+        intakeDao.insertAll(sanitizedIntakes)
         achievementDao.insertAll(exportData.achievements)
         notificationDao.insertAll(exportData.notifications)
 

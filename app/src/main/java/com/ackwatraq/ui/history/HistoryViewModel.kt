@@ -20,6 +20,9 @@ class HistoryViewModel(private val repository: WaterRepository) : ViewModel() {
     private val _historyData = MutableStateFlow<Map<LocalDate, Int>>(emptyMap())
     val historyData: StateFlow<Map<LocalDate, Int>> = _historyData.asStateFlow()
 
+    private val _drinkBreakdown = MutableStateFlow<Map<String, Int>>(emptyMap())
+    val drinkBreakdown: StateFlow<Map<String, Int>> = _drinkBreakdown.asStateFlow()
+
     private val _selectedRangeType = MutableStateFlow(HistoryRangeType.DAYS_7)
     val selectedRangeType: StateFlow<HistoryRangeType> = _selectedRangeType.asStateFlow()
 
@@ -70,6 +73,7 @@ class HistoryViewModel(private val repository: WaterRepository) : ViewModel() {
     fun loadHistory() {
         viewModelScope.launch {
             _historyData.value = repository.getHistoryBetween(_startDate.value, _endDate.value)
+            _drinkBreakdown.value = repository.getDrinkBreakdownBetween(_startDate.value, _endDate.value)
         }
     }
 }

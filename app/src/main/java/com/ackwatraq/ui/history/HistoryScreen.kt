@@ -1,13 +1,22 @@
 package com.ackwatraq.ui.history
 
-import android.graphics.Color
+import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.Canvas
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavController
@@ -64,18 +73,25 @@ fun HistoryScreen(navController: NavController, viewModel: HistoryViewModel) {
     Scaffold(
         topBar = { TopAppBar(title = { Text("History") }) }
     ) { padding ->
+        val drinkBreakdown by viewModel.drinkBreakdown.collectAsState()
+        
         Column(
-            modifier = Modifier.fillMaxSize().padding(padding).padding(16.dp)
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
             val titleText = when (rangeType) {
                 HistoryRangeType.DAYS_7 -> "Last 7 Days Intake"
                 HistoryRangeType.DAYS_30 -> "Last 30 Days Intake"
                 HistoryRangeType.CUSTOM -> "Custom Date Range"
             }
-            Text(titleText, style = MaterialTheme.typography.titleLarge)
+            Text(titleText, style = MaterialTheme.typography.titleLarge, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
             
             Row(
-                modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp), 
+                modifier = Modifier.fillMaxWidth(), 
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 FilterChip(
@@ -96,10 +112,8 @@ fun HistoryScreen(navController: NavController, viewModel: HistoryViewModel) {
                 )
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
-
             if (historyData.isEmpty()) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = androidx.compose.ui.Alignment.Center) {
+                Box(modifier = Modifier.fillMaxWidth().height(200.dp), contentAlignment = androidx.compose.ui.Alignment.Center) {
                     CircularProgressIndicator()
                 }
             } else {
@@ -115,7 +129,7 @@ fun HistoryScreen(navController: NavController, viewModel: HistoryViewModel) {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
-                    shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp)
+                    shape = RoundedCornerShape(24.dp)
                 ) {
                     Row(
                         modifier = Modifier.fillMaxWidth().padding(16.dp),
@@ -133,14 +147,21 @@ fun HistoryScreen(navController: NavController, viewModel: HistoryViewModel) {
                     }
                 }
                 
-                Spacer(modifier = Modifier.height(24.dp))
+                // Dynamic Beverage Distribution Chart
+                DrinkBreakdownChart(
+                    breakdown = drinkBreakdown,
+                    useMetric = useMetric,
+                    conversionFactor = conversionFactor,
+                    unitString = unitString
+                )
                 
+                // Weekly Bar Chart
                 val textColor = MaterialTheme.colorScheme.onSurface.toArgb()
                 val primaryColor = MaterialTheme.colorScheme.primary.toArgb()
                 val secondaryColor = MaterialTheme.colorScheme.tertiary.toArgb()
                 
                 AndroidView(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier.fillMaxWidth().height(260.dp),
                     factory = { context ->
                         BarChart(context).apply {
                             description.isEnabled = false
@@ -179,13 +200,132 @@ fun HistoryScreen(navController: NavController, viewModel: HistoryViewModel) {
                             setGradientColor(primaryColor, secondaryColor)
                             valueTextSize = 10f
                             valueTextColor = textColor
-                            setDrawValues(sortedEntries.size <= 14) // Hide values on top of bars if too crowded
+                            setDrawValues(sortedEntries.size <= 14)
                         }
 
                         chart.data = BarData(dataSet)
                         chart.invalidate()
                     }
                 )
+            }
+        }
+    }
+}
+
+@Composable
+fun DrinkBreakdownChart(
+    breakdown: Map<String, Int>,
+    useMetric: Boolean,
+    conversionFactor: Float,
+    unitString: String
+) {
+    if (breakdown.isEmpty() || breakdown.values.sum() == 0) {
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
+            shape = RoundedCornerShape(24.dp)
+        ) {
+            Box(modifier = Modifier.fillMaxWidth().padding(32.dp), contentAlignment = androidx.compose.ui.Alignment.Center) {
+                Text("No drinks logged in this range", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        }
+        return
+    }
+
+    val total = breakdown.values.sum().toFloat()
+    
+    val drinkMeta = remember {
+        mapOf(
+            "Water" to Pair("Pure Water 💧", Color(0xFF00E5FF).toArgb()),
+            "Tea" to Pair("Herbal Tea 🍵", Color(0xFF81C784).toArgb()),
+            "Sports Drink" to Pair("Sports Drink ⚡", Color(0xFFFFB74D).toArgb()),
+            "Coffee" to Pair("Coffee ☕", Color(0xFFA1887F).toArgb()),
+            "Soda / Juice" to Pair("Soda & Juice 🥤", Color(0xFFF06292).toArgb())
+        )
+    }
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)),
+        shape = RoundedCornerShape(24.dp),
+        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f))
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text("Beverage Distribution", style = MaterialTheme.typography.titleMedium, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(24.dp)
+            ) {
+                Box(
+                    modifier = Modifier.size(130.dp),
+                    contentAlignment = androidx.compose.ui.Alignment.Center
+                ) {
+                    Canvas(modifier = Modifier.fillMaxSize()) {
+                        var startAngle = -90f
+                        val strokeWidth = 14.dp.toPx()
+                        
+                        breakdown.forEach { (type, amount) ->
+                            val sweepAngle = (amount / total) * 360f
+                            val colorInt = drinkMeta[type]?.second ?: Color(0xFF9E9E9E).toArgb()
+                            
+                            drawArc(
+                                color = androidx.compose.ui.graphics.Color(colorInt),
+                                startAngle = startAngle,
+                                sweepAngle = sweepAngle,
+                                useCenter = false,
+                                style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
+                            )
+                            startAngle += sweepAngle
+                        }
+                    }
+                    Column(horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally) {
+                        val displayTotal = (total / conversionFactor).toInt()
+                        Text("${displayTotal}", style = MaterialTheme.typography.titleLarge, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
+                        Text(unitString, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                }
+
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.weight(1f)
+                ) {
+                    breakdown.forEach { (type, amount) ->
+                        val pct = (amount / total * 100).toInt()
+                        val meta = drinkMeta[type] ?: Pair(type, Color(0xFF9E9E9E).toArgb())
+                        val displayAmount = (amount / conversionFactor).toInt()
+                        
+                        Row(
+                            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Row(
+                                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(10.dp)
+                                        .background(androidx.compose.ui.graphics.Color(meta.second), shape = CircleShape)
+                                )
+                                Text(
+                                    text = meta.first,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    fontWeight = androidx.compose.ui.text.font.FontWeight.Medium
+                                )
+                            }
+                            Text(
+                                text = "$pct% ($displayAmount $unitString)",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+                            )
+                        }
+                    }
+                }
             }
         }
     }

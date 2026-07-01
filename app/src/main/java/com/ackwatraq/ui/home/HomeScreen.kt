@@ -69,6 +69,8 @@ fun HomeScreen(navController: NavController, viewModel: HomeViewModel) {
     var showCustomDialog by remember { mutableStateOf(false) }
     var showEditDialog by remember { mutableStateOf(false) }
     var showNotifications by remember { mutableStateOf(false) }
+    var pendingLogAmount by remember { mutableStateOf<Int?>(null) }
+    var showDrinkSheet by remember { mutableStateOf(false) }
     
     val unitString = if (useMetric) "mL" else "oz"
     val conversionFactor = if (useMetric) 1f else 29.5735f
@@ -500,7 +502,10 @@ fun HomeScreen(navController: NavController, viewModel: HomeViewModel) {
                                 modifier = Modifier
                                     .weight(1f)
                                     .height(48.dp)
-                                    .bouncyClick { viewModel.addWater(amount) }
+                                    .bouncyClick {
+                                        pendingLogAmount = amount
+                                        showDrinkSheet = true
+                                    }
                                     .background(
                                         brush = androidx.compose.ui.graphics.Brush.linearGradient(
                                             colors = listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.secondary)
@@ -551,8 +556,9 @@ fun HomeScreen(navController: NavController, viewModel: HomeViewModel) {
                                     onClick = {
                                         val amount = customAmount.toIntOrNull()
                                         if (amount != null && amount > 0) {
-                                            viewModel.addWater((amount * conversionFactor).roundToInt())
+                                            pendingLogAmount = (amount * conversionFactor).roundToInt()
                                             showCustomDialog = false
+                                            showDrinkSheet = true
                                         }
                                     }
                                 ) { Text("Add") }
@@ -598,6 +604,123 @@ fun HomeScreen(navController: NavController, viewModel: HomeViewModel) {
                 }
             }
         )
+
+        val currentLogAmount = pendingLogAmount
+        if (showDrinkSheet && currentLogAmount != null) {
+            val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+            
+            ModalBottomSheet(
+                onDismissRequest = {
+                    showDrinkSheet = false
+                    pendingLogAmount = null
+                },
+                sheetState = sheetState,
+                containerColor = MaterialTheme.colorScheme.surface,
+                shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp)
+                        .padding(bottom = 32.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    Text(
+                        text = "Select Beverage",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = "Different drinks hydrate at different rates. Select what you just drank to log its effective hydration.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    
+                    val drinkOptions = remember {
+                        listOf(
+                            DrinkTypeOption("Water", "Pure Water", "💧", 1.0f, "Optimal hydration", Color(0xFF00E5FF), Color(0xFF0F62FE)),
+                            DrinkTypeOption("Tea", "Herbal Tea", "🍵", 0.95f, "Gentle hydration (95% eff.)", Color(0xFF81C784), Color(0xFF2E7D32)),
+                            DrinkTypeOption("Sports Drink", "Sports Drink", "⚡", 1.0f, "Electrolytes & hydration", Color(0xFFFFB74D), Color(0xFFE65100)),
+                            DrinkTypeOption("Coffee", "Coffee", "☕", 0.8f, "Mild diuretic (80% eff.)", Color(0xFFA1887F), Color(0xFF5D4037)),
+                            DrinkTypeOption("Soda / Juice", "Soda & Juice", "🥤", 0.6f, "Sugar & caffeine (60% eff.)", Color(0xFFF06292), Color(0xFFC2185B))
+                        )
+                    }
+                    
+                    drinkOptions.forEach { option ->
+                        val isDark = isSystemInDarkTheme()
+                        val iconBg = if (isDark) option.darkColor.copy(alpha = 0.15f) else option.lightColor.copy(alpha = 0.1f)
+                        
+                        val rawAmt = currentLogAmount
+                        val effectiveAmt = Math.round(rawAmt * option.coefficient)
+                        val displayEffective = (effectiveAmt / conversionFactor).roundToInt()
+                        val displayRaw = (rawAmt / conversionFactor).roundToInt()
+                        
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .bouncyClick {
+                                    viewModel.addWater(rawAmt, option.id)
+                                    showDrinkSheet = false
+                                    pendingLogAmount = null
+                                },
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                            ),
+                            shape = RoundedCornerShape(16.dp),
+                            border = androidx.compose.foundation.BorderStroke(
+                                width = 1.dp,
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f)
+                            )
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(48.dp)
+                                        .background(iconBg, shape = CircleShape),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(option.emoji, fontSize = 24.sp)
+                                }
+                                
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = option.name,
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                    Spacer(modifier = Modifier.height(2.dp))
+                                    Text(
+                                        text = option.description,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                                
+                                Column(horizontalAlignment = Alignment.End) {
+                                    Text(
+                                        text = "+$displayEffective $unitString",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.ExtraBold,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                    Text(
+                                        text = "from $displayRaw $unitString",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -606,4 +729,14 @@ private data class MascotConfig(
     val speech: String,
     val brush: Brush,
     val textColor: Color
+)
+
+private data class DrinkTypeOption(
+    val id: String,
+    val name: String,
+    val emoji: String,
+    val coefficient: Float,
+    val description: String,
+    val darkColor: Color,
+    val lightColor: Color
 )

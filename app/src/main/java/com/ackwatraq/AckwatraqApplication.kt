@@ -32,12 +32,18 @@ class AckwatraqApplication : Application() {
             }
         }
 
+        val MIGRATION_2_3 = object : androidx.room.migration.Migration(2, 3) {
+            override fun migrate(database: androidx.sqlite.db.SupportSQLiteDatabase) {
+                database.execSQL("ALTER TABLE intake_records ADD COLUMN drinkType TEXT NOT NULL DEFAULT 'Water'")
+            }
+        }
+
         database = Room.databaseBuilder(
             this,
             AppDatabase::class.java,
             "ackwatraq-db"
         )
-        .addMigrations(MIGRATION_1_2)
+        .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
         .build()
 
         repository = WaterRepository(
